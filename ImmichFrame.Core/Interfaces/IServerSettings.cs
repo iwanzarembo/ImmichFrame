@@ -66,6 +66,9 @@
         public bool PlayAudio { get; }
         public string Layout { get; }
         public string Language { get; }
+        public bool GroupMemories { get; }
+        public string? MemoryLabelFormat { get; }
+        public string? MemoryLabelFormatSingular { get; }
 
         public void Validate();
     }
