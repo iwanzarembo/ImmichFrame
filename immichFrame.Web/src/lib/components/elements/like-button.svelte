@@ -40,7 +40,7 @@
 
 {#if $configStore.likeAlbum}
 	<button
-		class="like-button fixed bottom-16 right-4 z-50 text-primary drop-shadow-2xl transition-opacity duration-300"
+		class="like-button fixed bottom-16 right-4 z-[110] text-primary drop-shadow-2xl transition-opacity duration-300"
 		class:opacity-0={!visible}
 		class:opacity-70={visible && !liked}
 		class:opacity-100={liked}
