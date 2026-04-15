@@ -231,14 +231,27 @@
 	}
 
 	function shouldUseSplitView(assets: api.AssetResponseDto[]): boolean {
-		return (
-			$configStore.layout?.trim().toLowerCase() === 'splitview' &&
-			assets.length > 1 &&
-			isImageAsset(assets[0]) &&
-			isImageAsset(assets[1]) &&
-			isPortrait(assets[0]) &&
-			isPortrait(assets[1])
-		);
+		if (
+			$configStore.layout?.trim().toLowerCase() !== 'splitview' ||
+			assets.length < 2 ||
+			!isImageAsset(assets[0]) ||
+			!isImageAsset(assets[1]) ||
+			!isPortrait(assets[0]) ||
+			!isPortrait(assets[1])
+		) {
+			return false;
+		}
+
+		// When memories are grouped, only pair images from the same year
+		if ($configStore.groupMemories) {
+			const desc0 = assets[0].exifInfo?.description ?? '';
+			const desc1 = assets[1].exifInfo?.description ?? '';
+			if (desc0 !== desc1) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	function hasBirthday(assets: api.AssetResponseDto[]) {
@@ -490,7 +503,7 @@
 		<Appointments />
 
 		{#if displayingAssets.length > 0}
-			{#if assetsState.split}
+			{#if displayingAssets.length > 1 && assetsState.split}
 				<LikeButton
 					assetId={displayingAssets[0].id}
 					albums={assetsState.assets?.[0]?.[2] ?? []}

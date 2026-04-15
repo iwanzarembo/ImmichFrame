@@ -41,7 +41,10 @@ public class MemoryAssetsPool(ImmichApi immichApi, IAccountSettings accountSetti
 
         if (generalSettings.GroupMemories)
         {
-            return memoryAssets.OrderBy(m => m.yearsAgo).Select(m => m.asset);
+            return memoryAssets
+                .OrderBy(m => m.yearsAgo)
+                .ThenBy(m => m.asset.ExifInfo?.DateTimeOriginal)
+                .Select(m => m.asset);
         }
 
         return memoryAssets.Select(m => m.asset);
