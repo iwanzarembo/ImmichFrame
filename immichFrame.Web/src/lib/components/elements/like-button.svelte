@@ -9,9 +9,10 @@
 		assetId: string;
 		albums: api.AlbumResponseDto[];
 		visible: boolean;
+		position?: 'left' | 'right';
 	}
 
-	let { assetId, albums, visible }: Props = $props();
+	let { assetId, albums, visible, position = 'right' }: Props = $props();
 
 	let alreadyLiked = $derived(
 		albums.some((a) => a.albumName === $configStore.likeAlbum)
@@ -52,7 +53,9 @@
 
 {#if $configStore.likeAlbum}
 	<button
-		class="like-button fixed bottom-16 right-4 z-[110] text-primary drop-shadow-2xl transition-opacity duration-300"
+		class="like-button fixed bottom-16 z-[110] text-primary drop-shadow-2xl transition-opacity duration-300"
+		class:right-4={position === 'right'}
+		class:left-4={position === 'left'}
 		class:opacity-0={!visible}
 		class:opacity-70={visible && !liked}
 		class:opacity-100={liked}

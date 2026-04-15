@@ -490,11 +490,26 @@
 		<Appointments />
 
 		{#if displayingAssets.length > 0}
-			<LikeButton
-				assetId={displayingAssets[0].id}
-				albums={assetsState.assets?.[0]?.[2] ?? []}
-				visible={cursorVisible}
-			/>
+			{#if assetsState.split}
+				<LikeButton
+					assetId={displayingAssets[0].id}
+					albums={assetsState.assets?.[0]?.[2] ?? []}
+					visible={cursorVisible}
+					position="left"
+				/>
+				<LikeButton
+					assetId={displayingAssets[1].id}
+					albums={assetsState.assets?.[1]?.[2] ?? []}
+					visible={cursorVisible}
+					position="right"
+				/>
+			{:else}
+				<LikeButton
+					assetId={displayingAssets[0].id}
+					albums={assetsState.assets?.[0]?.[2] ?? []}
+					visible={cursorVisible}
+				/>
+			{/if}
 		{/if}
 
 		<OverlayControls
