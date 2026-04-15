@@ -62,6 +62,18 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
         if (hasTags)
             pools.Add(new TagAssetsPool(_apiCache, _immichApi, accountSettings));
 
+        if (pools.Count == 0)
+        {
+            return new AllAssetsPool(_apiCache, _immichApi, accountSettings);
+        }
+
+        if (pools.Count == 1 && accountSettings.ShowMemories && !accountSettings.ShowFavorites && !hasAlbums && !hasPeople && !hasTags)
+        {
+            // Memory-only config: add AllAssetsPool as fallback
+            // so if no memories exist today, random images are shown
+            pools.Add(new AllAssetsPool(_apiCache, _immichApi, accountSettings));
+        }
+
         return new MultiAssetPool(pools);
     }
 
