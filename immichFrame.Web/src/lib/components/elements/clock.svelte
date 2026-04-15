@@ -5,8 +5,16 @@
 	import * as locale from 'date-fns/locale';
 	import { configStore } from '$lib/stores/config.store';
 	import { clientIdentifierStore } from '$lib/stores/persist.store';
+	import MemoryLabel from './memory-label.svelte';
+	import type { AssetResponseDto } from '$lib/immichFrameApi';
 
 	api.init();
+
+	interface Props {
+		memoryAssets?: AssetResponseDto[];
+	}
+
+	let { memoryAssets = [] }: Props = $props();
 
 	let weather = $state<api.IWeather | null>(null);
 
@@ -66,6 +74,7 @@
 	{$configStore.style == 'blur' ? 'backdrop-blur-lg rounded-tr-2xl' : ''}	
 	drop-shadow-2xl p-3"
 >
+	<MemoryLabel assets={memoryAssets} />
 	<p id="clockdate" class="mt-2 text-sm sm:text-sm md:text-md lg:text-xl font-thin text-shadow-sm">
 		{formattedDate()}
 	</p>
