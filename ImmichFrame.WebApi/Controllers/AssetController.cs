@@ -60,6 +60,16 @@ namespace ImmichFrame.WebApi.Controllers
             return (await _logic.GetAlbumInfoById(id)).ToList() ?? throw new AssetNotFoundException("No asset was found");
         }
 
+        [HttpPost("{id}/Like", Name = "LikeAsset")]
+        public async Task<IActionResult> LikeAsset(Guid id, string clientIdentifier = "")
+        {
+            var sanitizedClientIdentifier = clientIdentifier.SanitizeString();
+            _logger.LogDebug("Like asset '{id}' requested by '{sanitizedClientIdentifier}'", id, sanitizedClientIdentifier);
+
+            await _logic.LikeAsset(id);
+            return Ok();
+        }
+
         [Obsolete("Use GetAsset instead.")]
         [HttpGet("{id}/Image", Name = "GetImage")]
         [Produces("image/jpeg", "image/webp")]

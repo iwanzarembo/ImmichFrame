@@ -69,6 +69,7 @@
         public bool GroupMemories { get; }
         public string? MemoryLabelFormat { get; }
         public string? MemoryLabelFormatSingular { get; }
+        public string? LikeAlbum { get; }
 
         public void Validate();
     }

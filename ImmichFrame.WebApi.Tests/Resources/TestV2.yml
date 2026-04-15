@@ -38,6 +38,7 @@ General:
   GroupMemories: true
   MemoryLabelFormat: MemoryLabelFormat_TEST
   MemoryLabelFormatSingular: MemoryLabelFormatSingular_TEST
+  LikeAlbum: LikeAlbum_TEST
 Accounts:
 - ImmichServerUrl: Account1.ImmichServerUrl_TEST
   ApiKey: Account1.ApiKey_TEST

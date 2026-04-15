@@ -104,6 +104,18 @@ General:
   PlayAudio: false  # boolean
   # Allow two portrait images to be displayed next to each other
   Layout: 'splitview'  # single | splitview
+  # Group memory images by year and display them sequentially (all images from 1 year ago, then 2 years ago, etc.)
+  GroupMemories: false  # boolean
+  # Format string for the memory year label overlay. {0} is replaced with the number of years.
+  # e.g. 'Vor {0} Jahren' will display 'Vor 3 Jahren' for a 3-year-old memory.
+  MemoryLabelFormat: null  # string
+  # Singular variant of MemoryLabelFormat, used when the memory is exactly 1 year ago.
+  # e.g. 'Vor {0} Jahr'
+  MemoryLabelFormatSingular: null  # string
+  # Album name to add liked images to. When set, a heart icon appears on displayed images.
+  # The album is auto-created if it doesn't exist. When ShowMemories is the only source and
+  # no memories exist for the day, images from this album are shown as fallback.
+  LikeAlbum: null  # string
 
 # multiple accounts permitted
 Accounts:
@@ -192,6 +204,7 @@ Images will be drawn from each account proportionally based on the total number 
 For full ImmichFrame functionality, the API key being used needs the following permissions:
 
 - `album.read`
+- `album.write` (required for the LikeAlbum feature)
 - `album.statistics`
 - `asset.view`
 - `asset.read`

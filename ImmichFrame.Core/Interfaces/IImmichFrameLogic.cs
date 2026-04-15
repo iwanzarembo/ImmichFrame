@@ -13,6 +13,7 @@ namespace ImmichFrame.Core.Interfaces
         public Task<AssetResponse> GetAsset(Guid id, AssetTypeEnum? assetType = null, string? rangeHeader = null);
         public Task<long> GetTotalAssets();
         public Task SendWebhookNotification(IWebhookNotification notification);
+        public Task LikeAsset(Guid assetId);
     }
 
     public interface IAccountImmichFrameLogic : IImmichFrameLogic

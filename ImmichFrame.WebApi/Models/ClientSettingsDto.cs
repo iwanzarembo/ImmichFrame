@@ -35,6 +35,7 @@ public class ClientSettingsDto
     public bool GroupMemories { get; set; }
     public string? MemoryLabelFormat { get; set; }
     public string? MemoryLabelFormatSingular { get; set; }
+    public string? LikeAlbum { get; set; }
 
     public static ClientSettingsDto FromGeneralSettings(IGeneralSettings generalSettings)
     {
@@ -70,6 +71,7 @@ public class ClientSettingsDto
         dto.GroupMemories = generalSettings.GroupMemories;
         dto.MemoryLabelFormat = generalSettings.MemoryLabelFormat;
         dto.MemoryLabelFormatSingular = generalSettings.MemoryLabelFormatSingular;
+        dto.LikeAlbum = generalSettings.LikeAlbum;
         return dto;
     }
 }

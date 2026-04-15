@@ -38,7 +38,8 @@
     "Layout": "Layout_TEST",
     "GroupMemories": true,
     "MemoryLabelFormat": "MemoryLabelFormat_TEST",
-    "MemoryLabelFormatSingular": "MemoryLabelFormatSingular_TEST"
+    "MemoryLabelFormatSingular": "MemoryLabelFormatSingular_TEST",
+    "LikeAlbum": "LikeAlbum_TEST"
   },
   "Accounts": [
     {

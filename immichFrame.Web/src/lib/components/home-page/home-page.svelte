@@ -12,6 +12,7 @@
 	import Clock from '../elements/clock.svelte';
 	import Appointments from '../elements/appointments.svelte';
 	import LoadingElement from '../elements/LoadingElement.svelte';
+	import LikeButton from '../elements/like-button.svelte';
 	import { page } from '$app/state';
 	import { ProgressBarLocation, ProgressBarStatus } from '../elements/progress-bar.types';
 	import { isImageAsset, isVideoAsset } from '$lib/constants/asset-type';
@@ -487,6 +488,10 @@
 		{/if}
 
 		<Appointments />
+
+		{#if displayingAssets.length > 0}
+			<LikeButton assetId={displayingAssets[0].id} visible={cursorVisible} />
+		{/if}
 
 		<OverlayControls
 			next={async () => {

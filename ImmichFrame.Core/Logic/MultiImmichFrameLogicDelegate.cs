@@ -54,6 +54,9 @@ public class MultiImmichFrameLogicDelegate : IImmichFrameLogic
 
     public Task SendWebhookNotification(IWebhookNotification notification) =>
         WebhookHelper.SendWebhookNotification(notification, _serverSettings.GeneralSettings.Webhook);
+
+    public Task LikeAsset(Guid assetId)
+        => _accountSelectionStrategy.ForAsset(assetId, logic => logic.LikeAsset(assetId));
 }
 
 public static class AccountAndAssetExtensions

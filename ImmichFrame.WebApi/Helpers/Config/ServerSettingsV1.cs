@@ -59,6 +59,7 @@ public class ServerSettingsV1 : IConfigSettable
     public bool GroupMemories { get; set; } = false;
     public string? MemoryLabelFormat { get; set; }
     public string? MemoryLabelFormatSingular { get; set; }
+    public string? LikeAlbum { get; set; }
 }
 
 /// <summary>
@@ -141,6 +142,7 @@ public class ServerSettingsV1Adapter(ServerSettingsV1 _delegate) : IServerSettin
         public bool GroupMemories => _delegate.GroupMemories;
         public string? MemoryLabelFormat => _delegate.MemoryLabelFormat;
         public string? MemoryLabelFormatSingular => _delegate.MemoryLabelFormatSingular;
+        public string? LikeAlbum => _delegate.LikeAlbum;
 
         public void Validate() { }
     }

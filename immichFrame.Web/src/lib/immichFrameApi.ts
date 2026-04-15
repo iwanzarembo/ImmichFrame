@@ -216,6 +216,7 @@ export type ClientSettingsDto = {
     groupMemories?: boolean;
     memoryLabelFormat?: string | null;
     memoryLabelFormatSingular?: string | null;
+    likeAlbum?: string | null;
 };
 export type IWeather = {
     location?: string | null;
@@ -341,5 +342,17 @@ export function getWeather({ clientIdentifier }: {
         clientIdentifier
     }))}`, {
         ...opts
+    });
+}
+export function likeAsset(id: string, { clientIdentifier }: {
+    clientIdentifier?: string;
+} = {}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+    }>(`/api/Asset/${encodeURIComponent(id)}/Like${QS.query(QS.explode({
+        clientIdentifier
+    }))}`, {
+        ...opts,
+        method: "POST"
     });
 }

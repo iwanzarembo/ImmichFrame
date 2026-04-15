@@ -373,4 +373,30 @@ public class CachingApiAssetsPoolTests
         Assert.That(result[1].Id, Is.EqualTo("B"));
         Assert.That(result[2].Id, Is.EqualTo("C"));
     }
+
+    [Test]
+    public async Task GetAssets_ReturnsAllAssets_WhenPreserveOrderIsTrue()
+    {
+        // Arrange — 6 assets, but only request 2; PreserveOrder should return all
+        var orderedAssets = new List<AssetResponseDto>
+        {
+            new AssetResponseDto { Id = "A", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "B", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "C", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "D", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "E", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "F", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+        };
+
+        var preservingPool = new OrderPreservingCachingApiAssetsPool(_mockApiCache.Object, _mockImmichApi.Object, _mockAccountSettings.Object);
+        preservingPool.LoadAssetsFunc = () => Task.FromResult<IEnumerable<AssetResponseDto>>(orderedAssets);
+
+        // Act — request fewer than total
+        var result = (await preservingPool.GetAssets(2)).ToList();
+
+        // Assert — all 6 returned in order despite requesting only 2
+        Assert.That(result.Count, Is.EqualTo(6));
+        Assert.That(result[0].Id, Is.EqualTo("A"));
+        Assert.That(result[5].Id, Is.EqualTo("F"));
+    }
 }

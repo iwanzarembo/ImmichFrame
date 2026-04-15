@@ -75,6 +75,7 @@ public class GeneralSettings : IGeneralSettings, IConfigSettable
     public bool GroupMemories { get; set; } = false;
     public string? MemoryLabelFormat { get; set; }
     public string? MemoryLabelFormatSingular { get; set; }
+    public string? LikeAlbum { get; set; }
 
     public void Validate() { }
 }

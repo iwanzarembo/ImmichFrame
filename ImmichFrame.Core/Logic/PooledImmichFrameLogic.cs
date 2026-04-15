@@ -14,6 +14,7 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
     private readonly IAssetPool _pool;
     private readonly ImmichApi _immichApi;
     private readonly string _downloadLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ImageCache");
+    private Guid? _likeAlbumId;
 
     public PooledImmichFrameLogic(IAccountSettings accountSettings, IGeneralSettings generalSettings, IHttpClientFactory httpClientFactory)
     {
@@ -70,8 +71,11 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
         if (pools.Count == 1 && accountSettings.ShowMemories && !accountSettings.ShowFavorites && !hasAlbums && !hasPeople && !hasTags)
         {
             // Memory-only config: wrap in FallbackAssetPool so that if no memories
-            // exist today, random images are shown instead of a blank screen
-            return new FallbackAssetPool(pools[0], new AllAssetsPool(_apiCache, _immichApi, accountSettings));
+            // exist today, liked album images (or random images) are shown instead of a blank screen
+            IAssetPool fallback = !string.IsNullOrWhiteSpace(_generalSettings.LikeAlbum)
+                ? new LikeAlbumAssetsPool(_apiCache, _immichApi, accountSettings, _generalSettings.LikeAlbum)
+                : new AllAssetsPool(_apiCache, _immichApi, accountSettings);
+            return new FallbackAssetPool(pools[0], fallback);
         }
 
         return new MultiAssetPool(pools);
@@ -210,6 +214,36 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
             ContentLength = contentLength
         };
     }
+    public async Task LikeAsset(Guid assetId)
+    {
+        var albumName = _generalSettings.LikeAlbum;
+        if (string.IsNullOrWhiteSpace(albumName))
+            throw new InvalidOperationException("LikeAlbum is not configured.");
+
+        var albumId = await GetOrCreateLikeAlbum(albumName);
+
+        var body = new BulkIdsDto { Ids = new List<Guid> { assetId } };
+        await _immichApi.AddAssetsToAlbumAsync(albumId, null, body);
+    }
+
+    private async Task<Guid> GetOrCreateLikeAlbum(string albumName)
+    {
+        if (_likeAlbumId.HasValue)
+            return _likeAlbumId.Value;
+
+        var albums = await _immichApi.GetAllAlbumsAsync(null, null);
+        var existing = albums.FirstOrDefault(a => a.AlbumName == albumName);
+        if (existing != null)
+        {
+            _likeAlbumId = new Guid(existing.Id);
+            return _likeAlbumId.Value;
+        }
+
+        var created = await _immichApi.CreateAlbumAsync(new CreateAlbumDto { AlbumName = albumName });
+        _likeAlbumId = new Guid(created.Id);
+        return _likeAlbumId.Value;
+    }
+
     public Task SendWebhookNotification(IWebhookNotification notification) =>
         WebhookHelper.SendWebhookNotification(notification, _generalSettings.Webhook);
 
