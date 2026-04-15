@@ -350,7 +350,7 @@
 		}
 
 		let album: api.AlbumResponseDto[] | null = null;
-		if ($configStore.showAlbumName) {
+		if ($configStore.showAlbumName || $configStore.likeAlbum) {
 			const albumReq = await api.getAlbumInfo(assetResponse.id, {
 				clientIdentifier: $clientIdentifierStore
 			});
@@ -490,7 +490,11 @@
 		<Appointments />
 
 		{#if displayingAssets.length > 0}
-			<LikeButton assetId={displayingAssets[0].id} visible={cursorVisible} />
+			<LikeButton
+				assetId={displayingAssets[0].id}
+				albums={assetsState.assets?.[0]?.[2] ?? []}
+				visible={cursorVisible}
+			/>
 		{/if}
 
 		<OverlayControls

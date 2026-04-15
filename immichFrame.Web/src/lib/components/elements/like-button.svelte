@@ -7,23 +7,26 @@
 
 	interface Props {
 		assetId: string;
+		albums: api.AlbumResponseDto[];
 		visible: boolean;
 	}
 
-	let { assetId, visible }: Props = $props();
+	let { assetId, albums, visible }: Props = $props();
 
-	let liked = $state(false);
+	let alreadyLiked = $derived(
+		albums.some((a) => a.albumName === $configStore.likeAlbum)
+	);
+	let justLiked = $state(false);
 	let loading = $state(false);
 
+	let liked = $derived(alreadyLiked || justLiked);
+
 	async function handleLike() {
-		if (loading) return;
+		if (loading || liked) return;
 		loading = true;
 		try {
 			await api.likeAsset(assetId, { clientIdentifier: $clientIdentifierStore });
-			liked = true;
-			setTimeout(() => {
-				liked = false;
-			}, 2000);
+			justLiked = true;
 		} catch (err) {
 			console.error('Failed to like asset:', err);
 		} finally {
@@ -32,9 +35,9 @@
 	}
 
 	$effect(() => {
-		// Reset liked state when asset changes
+		// Reset justLiked state when asset changes
 		assetId;
-		liked = false;
+		justLiked = false;
 	});
 </script>
 
@@ -45,13 +48,13 @@
 		class:opacity-70={visible && !liked}
 		class:opacity-100={liked}
 		onclick={handleLike}
-		disabled={loading}
+		disabled={loading || liked}
 	>
 		<Icon
 			path={liked ? mdiHeart : mdiHeartOutline}
 			size="2.5rem"
 			color={liked ? '#ef4444' : 'currentColor'}
-			title="Like"
+			title={liked ? 'Already liked' : 'Like'}
 		/>
 	</button>
 {/if}
@@ -63,7 +66,10 @@
 		cursor: pointer;
 		padding: 0.5rem;
 	}
-	.like-button:hover {
+	.like-button:disabled {
+		cursor: default;
+	}
+	.like-button:hover:not(:disabled) {
 		opacity: 1 !important;
 	}
 </style>
