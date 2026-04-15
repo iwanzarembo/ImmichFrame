@@ -46,6 +46,7 @@ string? MemoryLabelFormatSingular { get; }
 - When `GroupMemories = true`: after loading memories from the API, sort by `yearsAgo` ascending (1 year first, then 2, etc.). Within a year group, maintain Immich's original order.
 - When `GroupMemories = false`: existing behavior (no sorting, will be shuffled by base class).
 - Description text: use `MemoryLabelFormat` if set (replace `{0}` with year count, handle singular for count=1). Fall back to existing English `"X year(s) ago"` if not set.
+- **Empty-Memory fallback**: when `ShowMemories = true` and the Memory pool returns no assets for today (and no other pools like Albums/Favorites/People are configured), fall back to random images from the entire Immich library via `AllAssetsPool`. This prevents a blank screen on days without Memories. The fallback only activates when no other asset source is available — if Albums or Favorites are also configured, those will fill the slideshow naturally through `MultiAssetPool`.
 
 **`ServerSettings.cs` / env var mapping** - Map the two new env vars to the settings properties.
 
@@ -112,6 +113,7 @@ Immich API  -->  MemoryAssetsPool.LoadAssets()
 | `ImmichFrame.Core/Interfaces/IServerSettings.cs` | Add `GroupMemories`, `MemoryLabelFormat` to `IGeneralSettings` |
 | `ImmichFrame.Core/Logic/Pool/CachingApiAssetsPool.cs` | Add `PreserveOrder` virtual property, conditional shuffle |
 | `ImmichFrame.Core/Logic/Pool/MemoryAssetsPool.cs` | Accept `IGeneralSettings`, sort by year, use format string, override `PreserveOrder` |
+| `ImmichFrame.Core/Logic/PooledImmichFrameLogic.cs` | Add fallback to `AllAssetsPool` when Memory pool is empty and no other sources |
 | `ImmichFrame.WebApi/Models/ServerSettings.cs` (or equivalent) | Map env vars to new properties |
 | `ImmichFrame.WebApi/Models/ClientSettingsDto.cs` (or equivalent) | Add frontend-facing fields |
 | `immichFrame.Web/src/lib/immichFrameApi.ts` | Add types to `ClientSettingsDto` |
@@ -121,7 +123,8 @@ Immich API  -->  MemoryAssetsPool.LoadAssets()
 
 ## Edge Cases
 
-- **No Memories today**: Memory pool is empty, no Memory blocks shown, label never appears. Normal behavior.
+- **No Memories today, no other sources configured**: `PooledImmichFrameLogic.BuildPool()` detects that the only configured source is Memories and the Memory pool is empty. It falls back to `AllAssetsPool`, showing random images from the Immich library. The fallback respects the `ExcludedAlbums` setting — images from excluded albums are filtered out, same as for any other pool. No Memory label is shown. This prevents a blank screen.
+- **No Memories today, other sources configured**: Memory pool is empty but Albums/Favorites/People pools provide images. Normal behavior — no fallback needed.
 - **Only 1 year of Memories**: Single group, label shows "Vor 1 Jahr", then normal images resume.
 - **`GroupMemories=true` but `MemoryLabelFormat` not set**: Memories are still grouped/sorted, but no label overlay is shown. The English "X years ago" description still appears in asset-info.
 - **`MemoryLabelFormat` set but `GroupMemories=false`**: The label format is used for the description text, but images are shuffled (not grouped). Label overlay is still shown per-image.
@@ -134,3 +137,4 @@ Immich API  -->  MemoryAssetsPool.LoadAssets()
 - Verify singular handling: "Vor 1 Jahr" vs "Vor 3 Jahren".
 - Verify label disappears when non-Memory images are shown.
 - Verify existing unit tests still pass.
+- Verify empty-Memory fallback: with `ShowMemories=true`, no Albums/Favorites configured, and no Memories for today, random library images are shown instead of a blank screen.
