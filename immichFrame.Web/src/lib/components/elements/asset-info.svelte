@@ -68,6 +68,12 @@
 	);
 	let availablePeople = $derived(asset.people?.filter((x) => x.name));
 	let availableTags = $derived(asset.tags?.filter((x) => x.name));
+	let isMemoryLabel = $derived(
+		$configStore.groupMemories &&
+		$configStore.memoryLabelFormat &&
+		desc &&
+		/\d/.test(desc)
+	);
 </script>
 
 {#if showPhotoDate || showLocation || showImageDesc || showPeopleDesc || showTagsDesc || showAlbumName}
@@ -84,7 +90,7 @@
 				<span class="info-text" class:short-text={split}>{formattedDate}</span>
 			</p>
 		{/if}
-		{#if showImageDesc && desc}
+		{#if showImageDesc && desc && !isMemoryLabel}
 			<p id="imagedescription" class="info-item">
 				<Icon path={mdiText} class="info-icon" />
 				<span class="info-text" class:short-text={split}>{desc}</span>
