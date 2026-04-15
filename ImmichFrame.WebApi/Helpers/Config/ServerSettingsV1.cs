@@ -56,6 +56,9 @@ public class ServerSettingsV1 : IConfigSettable
     public bool ImageFill { get; set; } = false;
     public bool PlayAudio { get; set; } = false;
     public string Layout { get; set; } = "splitview";
+    public bool GroupMemories { get; set; } = false;
+    public string? MemoryLabelFormat { get; set; }
+    public string? MemoryLabelFormatSingular { get; set; }
 }
 
 /// <summary>
@@ -135,6 +138,9 @@ public class ServerSettingsV1Adapter(ServerSettingsV1 _delegate) : IServerSettin
         public bool PlayAudio => _delegate.PlayAudio;
         public string Layout => _delegate.Layout;
         public string Language => _delegate.Language;
+        public bool GroupMemories => _delegate.GroupMemories;
+        public string? MemoryLabelFormat => _delegate.MemoryLabelFormat;
+        public string? MemoryLabelFormatSingular => _delegate.MemoryLabelFormatSingular;
 
         public void Validate() { }
     }
