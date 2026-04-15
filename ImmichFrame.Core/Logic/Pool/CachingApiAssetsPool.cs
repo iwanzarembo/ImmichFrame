@@ -8,6 +8,8 @@ public abstract class CachingApiAssetsPool(IApiCache apiCache, ImmichApi immichA
 {
     private readonly Random _random = new();
 
+    protected virtual bool PreserveOrder => false;
+
     public async Task<long> GetAssetCount(CancellationToken ct = default)
     {
         return (await AllAssets(ct)).Count();
@@ -15,7 +17,12 @@ public abstract class CachingApiAssetsPool(IApiCache apiCache, ImmichApi immichA
 
     public async Task<IEnumerable<AssetResponseDto>> GetAssets(int requested, CancellationToken ct = default)
     {
-        return (await AllAssets(ct)).OrderBy(_ => _random.Next()).Take(requested);
+        var assets = await AllAssets(ct);
+        if (!PreserveOrder)
+        {
+            assets = assets.OrderBy(_ => _random.Next());
+        }
+        return assets.Take(requested);
     }
 
     private async Task<IEnumerable<AssetResponseDto>> AllAssets(CancellationToken ct = default)

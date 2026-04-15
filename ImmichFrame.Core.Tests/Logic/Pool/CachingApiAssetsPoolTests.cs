@@ -30,6 +30,22 @@ public class CachingApiAssetsPoolTests
         }
     }
 
+    private class OrderPreservingCachingApiAssetsPool : CachingApiAssetsPool
+    {
+        public Func<Task<IEnumerable<AssetResponseDto>>> LoadAssetsFunc { get; set; }
+        protected override bool PreserveOrder => true;
+
+        public OrderPreservingCachingApiAssetsPool(IApiCache apiCache, ImmichApi immichApi, IAccountSettings accountSettings)
+            : base(apiCache, immichApi, accountSettings)
+        {
+        }
+
+        protected override Task<IEnumerable<AssetResponseDto>> LoadAssets(CancellationToken ct = default)
+        {
+            return LoadAssetsFunc != null ? LoadAssetsFunc() : Task.FromResult(Enumerable.Empty<AssetResponseDto>());
+        }
+    }
+
     [SetUp]
     public void Setup()
     {
@@ -332,5 +348,29 @@ public class CachingApiAssetsPoolTests
         Assert.That(result.Any(a => a.Id == "1"));
         Assert.That(result.Any(a => a.Id == "4"));
         Assert.That(result.Any(a => a.Id == "3" || a.Id == "5" || a.Id == "2"), Is.False);
+    }
+
+    [Test]
+    public async Task GetAssets_PreservesOrder_WhenPreserveOrderIsTrue()
+    {
+        // Arrange
+        var orderedAssets = new List<AssetResponseDto>
+        {
+            new AssetResponseDto { Id = "A", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "B", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+            new AssetResponseDto { Id = "C", Type = AssetTypeEnum.IMAGE, IsArchived = false, ExifInfo = new ExifResponseDto { DateTimeOriginal = DateTime.Now } },
+        };
+
+        var preservingPool = new OrderPreservingCachingApiAssetsPool(_mockApiCache.Object, _mockImmichApi.Object, _mockAccountSettings.Object);
+        preservingPool.LoadAssetsFunc = () => Task.FromResult<IEnumerable<AssetResponseDto>>(orderedAssets);
+
+        // Act
+        var result = (await preservingPool.GetAssets(3)).ToList();
+
+        // Assert — order must be preserved exactly
+        Assert.That(result.Count, Is.EqualTo(3));
+        Assert.That(result[0].Id, Is.EqualTo("A"));
+        Assert.That(result[1].Id, Is.EqualTo("B"));
+        Assert.That(result[2].Id, Is.EqualTo("C"));
     }
 }
