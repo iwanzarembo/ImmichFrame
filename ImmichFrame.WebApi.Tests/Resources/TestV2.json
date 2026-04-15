@@ -35,7 +35,10 @@
     "ImagePan": true,
     "ImageFill": true,
     "PlayAudio": true,
-    "Layout": "Layout_TEST"
+    "Layout": "Layout_TEST",
+    "GroupMemories": true,
+    "MemoryLabelFormat": "MemoryLabelFormat_TEST",
+    "MemoryLabelFormatSingular": "MemoryLabelFormatSingular_TEST"
   },
   "Accounts": [
     {

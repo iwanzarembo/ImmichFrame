@@ -32,6 +32,9 @@ public class ClientSettingsDto
     public bool PlayAudio { get; set; }
     public string Layout { get; set; }
     public string Language { get; set; }
+    public bool GroupMemories { get; set; }
+    public string? MemoryLabelFormat { get; set; }
+    public string? MemoryLabelFormatSingular { get; set; }
 
     public static ClientSettingsDto FromGeneralSettings(IGeneralSettings generalSettings)
     {
@@ -64,6 +67,9 @@ public class ClientSettingsDto
         dto.PlayAudio = generalSettings.PlayAudio;
         dto.Layout = generalSettings.Layout;
         dto.Language = generalSettings.Language;
+        dto.GroupMemories = generalSettings.GroupMemories;
+        dto.MemoryLabelFormat = generalSettings.MemoryLabelFormat;
+        dto.MemoryLabelFormatSingular = generalSettings.MemoryLabelFormatSingular;
         return dto;
     }
 }
