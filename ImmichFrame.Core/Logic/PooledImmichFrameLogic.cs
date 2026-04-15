@@ -69,9 +69,9 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
 
         if (pools.Count == 1 && accountSettings.ShowMemories && !accountSettings.ShowFavorites && !hasAlbums && !hasPeople && !hasTags)
         {
-            // Memory-only config: add AllAssetsPool as fallback
-            // so if no memories exist today, random images are shown
-            pools.Add(new AllAssetsPool(_apiCache, _immichApi, accountSettings));
+            // Memory-only config: wrap in FallbackAssetPool so that if no memories
+            // exist today, random images are shown instead of a blank screen
+            return new FallbackAssetPool(pools[0], new AllAssetsPool(_apiCache, _immichApi, accountSettings));
         }
 
         return new MultiAssetPool(pools);
