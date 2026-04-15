@@ -16,6 +16,7 @@ public class MemoryAssetsPoolTests
 {
     private Mock<ImmichApi> _mockImmichApi;
     private Mock<IAccountSettings> _mockAccountSettings;
+    private Mock<IGeneralSettings> _mockGeneralSettings;
     private MemoryAssetsPool _memoryAssetsPool;
 
     [SetUp]
@@ -23,8 +24,9 @@ public class MemoryAssetsPoolTests
     {
         _mockImmichApi = new Mock<ImmichApi>(null, null); // Base constructor requires ILogger, IHttpClientFactory, IOptions, pass null
         _mockAccountSettings = new Mock<IAccountSettings>();
+        _mockGeneralSettings = new Mock<IGeneralSettings>();
 
-        _memoryAssetsPool = new MemoryAssetsPool(_mockImmichApi.Object, _mockAccountSettings.Object);
+        _memoryAssetsPool = new MemoryAssetsPool(_mockImmichApi.Object, _mockAccountSettings.Object, _mockGeneralSettings.Object);
     }
 
     private List<AssetResponseDto> CreateSampleAssets(int count, bool withExif, int yearCreated, AssetTypeEnum assetType)
@@ -152,7 +154,7 @@ public class MemoryAssetsPoolTests
             _mockImmichApi.Setup(x => x.SearchMemoriesAsync(It.IsAny<DateTimeOffset>(), null, null, null, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(memories);
 
-            _memoryAssetsPool = new MemoryAssetsPool(_mockImmichApi.Object, _mockAccountSettings.Object);
+            _memoryAssetsPool = new MemoryAssetsPool(_mockImmichApi.Object, _mockAccountSettings.Object, _mockGeneralSettings.Object);
 
 
             // Act
@@ -228,5 +230,67 @@ public class MemoryAssetsPoolTests
         Assert.That(loadedAssets.Count(), Is.EqualTo(8)); // 4 memories * 2 assets
         _mockImmichApi.VerifyAll();
 
+    }
+
+    [Test]
+    public async Task LoadAssets_GroupsByYear_WhenGroupMemoriesIsTrue()
+    {
+        // Arrange
+        var currentYear = DateTime.Now.Year;
+        var memoriesYear1 = CreateSampleImageMemories(1, 2, true, currentYear - 1);
+        var memoriesYear3 = CreateSampleImageMemories(1, 2, true, currentYear - 3);
+        var memoriesYear2 = CreateSampleImageMemories(1, 2, true, currentYear - 2);
+
+        var allMemories = new List<MemoryResponseDto>();
+        allMemories.AddRange(memoriesYear3);
+        allMemories.AddRange(memoriesYear1);
+        allMemories.AddRange(memoriesYear2);
+
+        _mockGeneralSettings.Setup(x => x.GroupMemories).Returns(true);
+        _mockImmichApi.Setup(x => x.SearchMemoriesAsync(It.IsAny<DateTimeOffset>(), null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(allMemories);
+
+        // Act
+        var result = (await _memoryAssetsPool.GetAssets(6, CancellationToken.None)).ToList();
+
+        // Assert — sorted: year1 first, then year2, then year3
+        Assert.That(result.Count, Is.EqualTo(6));
+        Assert.That(result[0].ExifInfo.Description, Does.Contain("1"));
+        Assert.That(result[1].ExifInfo.Description, Does.Contain("1"));
+        Assert.That(result[2].ExifInfo.Description, Does.Contain("2"));
+        Assert.That(result[3].ExifInfo.Description, Does.Contain("2"));
+        Assert.That(result[4].ExifInfo.Description, Does.Contain("3"));
+        Assert.That(result[5].ExifInfo.Description, Does.Contain("3"));
+    }
+
+    [Test]
+    public async Task LoadAssets_UsesMemoryLabelFormat_WhenSet()
+    {
+        var memoryYear = DateTime.Now.Year - 2;
+        var memories = CreateSampleImageMemories(1, 1, true, memoryYear);
+
+        _mockGeneralSettings.Setup(x => x.MemoryLabelFormat).Returns("Vor {0} Jahren");
+        _mockImmichApi.Setup(x => x.SearchMemoriesAsync(It.IsAny<DateTimeOffset>(), null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(memories);
+
+        var result = (await _memoryAssetsPool.GetAssets(1, CancellationToken.None)).First();
+
+        Assert.That(result.ExifInfo.Description, Is.EqualTo("Vor 2 Jahren"));
+    }
+
+    [Test]
+    public async Task LoadAssets_UsesSingularFormat_WhenOneYearAgo()
+    {
+        var memoryYear = DateTime.Now.Year - 1;
+        var memories = CreateSampleImageMemories(1, 1, true, memoryYear);
+
+        _mockGeneralSettings.Setup(x => x.MemoryLabelFormat).Returns("Vor {0} Jahren");
+        _mockGeneralSettings.Setup(x => x.MemoryLabelFormatSingular).Returns("Vor {0} Jahr");
+        _mockImmichApi.Setup(x => x.SearchMemoriesAsync(It.IsAny<DateTimeOffset>(), null, null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(memories);
+
+        var result = (await _memoryAssetsPool.GetAssets(1, CancellationToken.None)).First();
+
+        Assert.That(result.ExifInfo.Description, Is.EqualTo("Vor 1 Jahr"));
     }
 }

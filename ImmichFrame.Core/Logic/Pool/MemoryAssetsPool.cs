@@ -5,18 +5,20 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace ImmichFrame.Core.Logic.Pool;
 
-public class MemoryAssetsPool(ImmichApi immichApi, IAccountSettings accountSettings) : CachingApiAssetsPool(new DailyApiCache(), immichApi, accountSettings)
+public class MemoryAssetsPool(ImmichApi immichApi, IAccountSettings accountSettings, IGeneralSettings generalSettings) : CachingApiAssetsPool(new DailyApiCache(), immichApi, accountSettings)
 {
+    protected override bool PreserveOrder => generalSettings.GroupMemories;
+
     protected override async Task<IEnumerable<AssetResponseDto>> LoadAssets(CancellationToken ct = default)
     {
         var searchDate = new DateTimeOffset(DateTime.SpecifyKind(DateTime.Today, DateTimeKind.Utc), TimeSpan.Zero);
         var memories = await immichApi.SearchMemoriesAsync(searchDate, null, null, null, ct);
 
-        var memoryAssets = new List<AssetResponseDto>();
+        var memoryAssets = new List<(int yearsAgo, AssetResponseDto asset)>();
         foreach (var memory in memories)
         {
             var assets = memory.Assets.ToList();
-            var yearsAgo = searchDate.Year - memory.Data.Year;
+            var yearsAgo = searchDate.Year - (int)memory.Data.Year;
 
             if (!accountSettings.ShowVideos)
             {
@@ -32,13 +34,31 @@ public class MemoryAssetsPool(ImmichApi immichApi, IAccountSettings accountSetti
                     asset.People = assetInfo.People;
                 }
 
-                asset.ExifInfo.Description = $"{yearsAgo} {(yearsAgo == 1 ? "year" : "years")} ago";
+                asset.ExifInfo.Description = FormatMemoryLabel(yearsAgo);
+                memoryAssets.Add((yearsAgo, asset));
             }
-
-            memoryAssets.AddRange(assets);
         }
 
-        return memoryAssets;
+        if (generalSettings.GroupMemories)
+        {
+            return memoryAssets.OrderBy(m => m.yearsAgo).Select(m => m.asset);
+        }
+
+        return memoryAssets.Select(m => m.asset);
+    }
+
+    private string FormatMemoryLabel(int yearsAgo)
+    {
+        if (!string.IsNullOrEmpty(generalSettings.MemoryLabelFormat))
+        {
+            if (yearsAgo == 1 && !string.IsNullOrEmpty(generalSettings.MemoryLabelFormatSingular))
+            {
+                return string.Format(generalSettings.MemoryLabelFormatSingular, yearsAgo);
+            }
+            return string.Format(generalSettings.MemoryLabelFormat, yearsAgo);
+        }
+
+        return $"{yearsAgo} {(yearsAgo == 1 ? "year" : "years")} ago";
     }
 }
 
