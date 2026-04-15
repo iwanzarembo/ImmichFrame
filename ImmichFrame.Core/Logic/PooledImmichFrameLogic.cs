@@ -226,6 +226,18 @@ public class PooledImmichFrameLogic : IAccountImmichFrameLogic
         await _immichApi.AddAssetsToAlbumAsync(albumId, null, body);
     }
 
+    public async Task UnlikeAsset(Guid assetId)
+    {
+        var albumName = _generalSettings.LikeAlbum;
+        if (string.IsNullOrWhiteSpace(albumName))
+            throw new InvalidOperationException("LikeAlbum is not configured.");
+
+        var albumId = await GetOrCreateLikeAlbum(albumName);
+
+        var body = new BulkIdsDto { Ids = new List<Guid> { assetId } };
+        await _immichApi.RemoveAssetFromAlbumAsync(albumId, body);
+    }
+
     private async Task<Guid> GetOrCreateLikeAlbum(string albumName)
     {
         if (_likeAlbumId.HasValue)

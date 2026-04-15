@@ -17,27 +17,36 @@
 		albums.some((a) => a.albumName === $configStore.likeAlbum)
 	);
 	let justLiked = $state(false);
+	let justUnliked = $state(false);
 	let loading = $state(false);
 
-	let liked = $derived(alreadyLiked || justLiked);
+	let liked = $derived((alreadyLiked && !justUnliked) || justLiked);
 
-	async function handleLike() {
-		if (loading || liked) return;
+	async function handleClick() {
+		if (loading) return;
 		loading = true;
 		try {
-			await api.likeAsset(assetId, { clientIdentifier: $clientIdentifierStore });
-			justLiked = true;
+			if (liked) {
+				await api.unlikeAsset(assetId, { clientIdentifier: $clientIdentifierStore });
+				justLiked = false;
+				justUnliked = true;
+			} else {
+				await api.likeAsset(assetId, { clientIdentifier: $clientIdentifierStore });
+				justLiked = true;
+				justUnliked = false;
+			}
 		} catch (err) {
-			console.error('Failed to like asset:', err);
+			console.error('Failed to update like status:', err);
 		} finally {
 			loading = false;
 		}
 	}
 
 	$effect(() => {
-		// Reset justLiked state when asset changes
+		// Reset local state when asset changes
 		assetId;
 		justLiked = false;
+		justUnliked = false;
 	});
 </script>
 
@@ -47,14 +56,14 @@
 		class:opacity-0={!visible}
 		class:opacity-70={visible && !liked}
 		class:opacity-100={liked}
-		onclick={handleLike}
-		disabled={loading || liked}
+		onclick={handleClick}
+		disabled={loading}
 	>
 		<Icon
 			path={liked ? mdiHeart : mdiHeartOutline}
 			size="2.5rem"
 			color={liked ? '#ef4444' : 'currentColor'}
-			title={liked ? 'Already liked' : 'Like'}
+			title={liked ? 'Unlike' : 'Like'}
 		/>
 	</button>
 {/if}
@@ -67,7 +76,7 @@
 		padding: 0.5rem;
 	}
 	.like-button:disabled {
-		cursor: default;
+		cursor: wait;
 	}
 	.like-button:hover:not(:disabled) {
 		opacity: 1 !important;

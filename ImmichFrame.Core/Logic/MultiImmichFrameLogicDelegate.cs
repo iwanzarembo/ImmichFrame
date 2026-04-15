@@ -57,6 +57,9 @@ public class MultiImmichFrameLogicDelegate : IImmichFrameLogic
 
     public Task LikeAsset(Guid assetId)
         => _accountSelectionStrategy.ForAsset(assetId, logic => logic.LikeAsset(assetId));
+
+    public Task UnlikeAsset(Guid assetId)
+        => _accountSelectionStrategy.ForAsset(assetId, logic => logic.UnlikeAsset(assetId));
 }
 
 public static class AccountAndAssetExtensions

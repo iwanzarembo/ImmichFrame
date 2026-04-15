@@ -356,3 +356,15 @@ export function likeAsset(id: string, { clientIdentifier }: {
         method: "POST"
     });
 }
+export function unlikeAsset(id: string, { clientIdentifier }: {
+    clientIdentifier?: string;
+} = {}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.fetchJson<{
+        status: 200;
+    }>(`/api/Asset/${encodeURIComponent(id)}/Like${QS.query(QS.explode({
+        clientIdentifier
+    }))}`, {
+        ...opts,
+        method: "DELETE"
+    });
+}

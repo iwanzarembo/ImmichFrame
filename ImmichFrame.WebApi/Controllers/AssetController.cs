@@ -70,6 +70,16 @@ namespace ImmichFrame.WebApi.Controllers
             return Ok();
         }
 
+        [HttpDelete("{id}/Like", Name = "UnlikeAsset")]
+        public async Task<IActionResult> UnlikeAsset(Guid id, string clientIdentifier = "")
+        {
+            var sanitizedClientIdentifier = clientIdentifier.SanitizeString();
+            _logger.LogDebug("Unlike asset '{id}' requested by '{sanitizedClientIdentifier}'", id, sanitizedClientIdentifier);
+
+            await _logic.UnlikeAsset(id);
+            return Ok();
+        }
+
         [Obsolete("Use GetAsset instead.")]
         [HttpGet("{id}/Image", Name = "GetImage")]
         [Produces("image/jpeg", "image/webp")]

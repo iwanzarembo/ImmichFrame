@@ -14,6 +14,7 @@ namespace ImmichFrame.Core.Interfaces
         public Task<long> GetTotalAssets();
         public Task SendWebhookNotification(IWebhookNotification notification);
         public Task LikeAsset(Guid assetId);
+        public Task UnlikeAsset(Guid assetId);
     }
 
     public interface IAccountImmichFrameLogic : IImmichFrameLogic
