@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ImmichFrame.WebApi
  * 1.0
@@ -9,7 +8,7 @@ import * as Oazapfts from "@oazapfts/runtime";
 import * as QS from "@oazapfts/runtime/query";
 export const defaults: Oazapfts.Defaults<Oazapfts.CustomHeaders> = {
     headers: {},
-    baseUrl: "/",
+    baseUrl: "/"
 };
 const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {};
@@ -214,6 +213,9 @@ export type ClientSettingsDto = {
     playAudio?: boolean;
     layout?: string | null;
     language?: string | null;
+    groupMemories?: boolean;
+    memoryLabelFormat?: string | null;
+    memoryLabelFormatSingular?: string | null;
 };
 export type IWeather = {
     location?: string | null;

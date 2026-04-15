@@ -942,6 +942,17 @@
           "language": {
             "type": "string",
             "nullable": true
+          },
+          "groupMemories": {
+            "type": "boolean"
+          },
+          "memoryLabelFormat": {
+            "type": "string",
+            "nullable": true
+          },
+          "memoryLabelFormatSingular": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
